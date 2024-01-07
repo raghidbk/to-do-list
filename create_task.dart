@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
+import 'todo_vew.dart';
 
 const String baseUrl = 'amjad5501.000webhostapp.com';
 
@@ -13,7 +14,7 @@ class createTask extends StatefulWidget {
 
 class _createTaskState extends State<createTask> {
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
-  final TextEditingController _controllerName = TextEditingController();
+  final TextEditingController _controllerContent = TextEditingController();
   final TextEditingController _controllerDate = TextEditingController();
   bool _loading = false;
   int month = 0;
@@ -40,7 +41,7 @@ class _createTaskState extends State<createTask> {
   @override
   void dispose(){
     super.dispose();
-    _controllerName.dispose();
+    _controllerContent.dispose();
     _controllerDate.dispose();
   }
 
@@ -57,7 +58,7 @@ class _createTaskState extends State<createTask> {
               const SizedBox(height: 10,),
               SizedBox(width: 300, child: TextFormField(
                 validator: (value) => (value == null || value.isEmpty) ? 'Please fill in task' : null,
-                controller: _controllerName,
+                controller: _controllerContent,
                 decoration: const InputDecoration(
                     hintText: 'Enter task',
                     border: OutlineInputBorder()
@@ -72,12 +73,15 @@ class _createTaskState extends State<createTask> {
                 if(_formkey.currentState!.validate()){
                 setState(() {
                 _loading = true;
-                saveTask(update, _controllerName.text, _controllerDate.text);
+                saveTask(update, _controllerContent.text,day.toString(),month.toString());
                 });}},
                 child:const Icon(Icons.add)),
               const SizedBox(height: 20,),
               ElevatedButton(onPressed: _loading ? null : () {
-                Navigator.of(context).push;
+                Navigator.of(context).pop( MaterialPageRoute(
+                    builder: (context) => const todovew()
+                )
+                );
               }, child: const Icon(Icons.arrow_back)),
             ],
           ),
@@ -87,18 +91,20 @@ class _createTaskState extends State<createTask> {
   }
 }
 
-void saveTask(Function(String) update, String task, String time) async{
+void saveTask(Function(String) update, String taskConten, String tday, String tmonth) async{
+  int tid=0;
   try{
     final uri = Uri.https(baseUrl, 'save.php');
     final response = await http.post(uri,
     headers: <String,String> {'content type' : 'application/json; charset=UTF-8'},
       body: convert.jsonEncode(<String,String>{
-        'task' : task , 'time' : time, 'key' : 'your_key'
+        'task' : taskConten , 'tday' : tday, 'tmonth' : tmonth, 'tid' : tid.toString(),'key' : 'your_key'
       })
     ).timeout(const Duration(seconds: 5));
     if(response.statusCode == 200){
       update(response.body);
     }
+    tid++;
   }catch(e){
     update('connection error');
   }
@@ -132,10 +138,11 @@ class _DropdownWidgetState extends State<DropdownWidget> {
           onSelected: (day){
         setState(() {
           widget.updateDay(int as int);
+          day = day;
         });
         },
           dropdownMenuEntries: days.map<DropdownMenuEntry<int>>((int day){
-            return DropdownMenuEntry(value: day,label: days.toString());
+            return DropdownMenuEntry(value: day ,label: day.toString());
           }).toList()),
       const SizedBox(height: 10,),
       DropdownMenu(width: 300,
@@ -143,10 +150,11 @@ class _DropdownWidgetState extends State<DropdownWidget> {
     onSelected: (month){
       setState(() {
         widget.updateMonth(int as int);
+        month = month;
       });
     },
     dropdownMenuEntries: months.map<DropdownMenuEntry<int>>((int month){
-      return DropdownMenuEntry(value: month, label: months.toString());
+      return DropdownMenuEntry(value: month, label: month.toString());
       }).toList()),
 
     ]);
