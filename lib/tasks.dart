@@ -65,7 +65,7 @@ class showTasks extends StatelessWidget {
             Flexible(child:Row(
               children: [
                 Checkbox(value: true, onChanged: (e){
-                 // _tasks[index].clear();
+                 //_tasks[index].clear();
                 })
               ],
             ))
